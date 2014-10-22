@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>ACM ICPC - Universidad Tecnológica de la Mixteca</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/jquery.qtip.min.css" />
+</head>
+<body>
+    <header>
+        <h1>ACM-ICPC Universidad Tecnológica de la Mixteca</h1>
+    </header>
+
+    <div id="content">
+        <canvas id="cfGraph" height="494" width="800"></canvas>
+    </div>
+
+    <aside>
+        <div id="comingContest"></div>
+        <div id="codeforces"></div>
+        <div id="uva"></div>
+        <div id="coj"></div>
+    </aside>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="js/spin.min.js"></script>
+    <script src="js/jquery.countdown.min.js"></script>
+    <script type="text/javascript" src="js/jquery.qtip.min.js"></script>
+
+    <script src="js/CodeforcesJsonRequests.js"></script>
+    
+    <script>
+        function spanString(s) {
+            return s.replace(/(\w+)/g, '<span style="display: inline-block;">$1</span>');
+        }
+    </script>
+    
+    <script src="js/comingContests.js"></script>
+    <script src="js/cfRatings.js"></script>
+    <script src="js/uvaRatings.js"></script>
+    <script src="js/cojRatings.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+body {
+    font-family: Helvetica, Arial, Verdana;
+    font-size: 11pt;
+    width: 1080px;
+    margin: 0px auto;
+    background-color: #fff;
+}
+
+header {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 5px;
+    margin: 0px 0px 5px;
+    border: 1px solid black;
+}
+
+#content {
+    float: left;
+    padding: 5px;
+    margin: 5px 5px 5px 0px;
+    width: 800px;
+}
+
+aside {
+    float: right;
+    border: 1px solid #ffffff;
+    padding: 0px;
+    margin: 5px 0px 5px 5px;
+    width: 250px;
+    overflow: auto;
+}
+
+.ratingTable, .topRatedTable {
+    font-size: 10pt;
+    border: 1px solid #B0C4DE;
+    border-collapse: collapse;
+    text-align: center;
+    margin-bottom: 15px;
+    min-width: 249px;
+}
+
+.ratingTable caption, .topRatedTable caption {
+    padding: 5px;
+    font-weight: bold;
+    font-size: 15px;
+    letter-spacing: 1px;
+    background-color: #006994;
+    color: white;
+    margin-bottom: 1px;
+    font-variant: small-caps;
+}
+
+.ratingTable caption span::first-letter, .topRatedTable caption span::first-letter {
+    color: red;
+}
+
+td.ratingColumn {
+    text-align: right;
+}
+
+.topRatedTable tbody tr td, .ratingTable tbody tr td {
+    padding: 5px;
+    border: 1px solid #B0C4DE;
+}
+
+.topRatedTable th, .ratingTable th {
+    border: 1px solid #B0C4DE;
+    padding: 5px;
+    background-color: #B0C4DE;
+    color: white;
+    text-transform: capitalize;
+}
+
+.topRatedTable tbody tr:nth-child(odd), .ratingTable tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+.topRatedTable tbody tr:nth-child(even), .ratingTable tbody tr:nth-child(even) {
+    background-color: #f8f8ff;
+}
+
+.ratingTable tbody tr:nth-child(odd) td div p.cdContainer {
+    background-color: #f8f8ff;
+}
+
+.ratingTable tbody tr:nth-child(even) td div p.cdContainer {
+    background-color: #ffffff;
+}
+
+td.international_grandmaster, td.grandmaster {
+    font-weight: bold;
+    color: red!important;
+}
+
+td.international_master, td.master {
+    font-weight: bold;
+    color: #ff8c00!important;
+}
+
+td.candidate_master {
+    font-weight: bold;
+    color: #a0a!important;
+}
+
+td.expert {
+    font-weight: bold;
+    color: blue!important;
+}
+
+td.specialist, td.pupil {
+    font-weight: bold;
+    color: green!important;
+}
+
+td.newbie {
+    font-weight: bold;
+    color: gray!important;
+}
+
+td.incRating {
+    padding-left: 15px;
+    background: url('../img/arrow_up.png') no-repeat 3px 50%;
+    background-size: 15px 15px;
+}
+
+td.decRating {
+    padding-left: 15px;
+    background: url('../img/arrow_down.png') no-repeat 3px 50%;
+    background-size: 15px 15px;
+}
+
+a:link {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:visited {
+    color: inherit;
+}
+
+div.contest {
+    letter-spacing: normal;
+    word-spacing: normal;
+    font-size: 14px;
+    font-family: sans-serif;
+    padding: 5px;
+}
+
+span.cdDays, span.cdHours, span.cdMinutes, span.cdSeconds {
+    display: inline-block;
+    color: black;
+    font-weight: bold;
+    margin: 0px;
+    padding: 3px 6px;
+}
+
+p.cdContainer {
+    margin: 5px 1px;
+    padding: 0px;
+    background-color: black;
+    border-radius: 10px;
+}
+
+a.solvedProblemLink:hover {
+    color: red;
+}
