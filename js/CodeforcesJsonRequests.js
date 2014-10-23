@@ -9,7 +9,7 @@ var CodeforcesJsonReqests = {
 
         return userList.map(function (obj) {
             var dfd        = new jQuery.Deferred();
-            var timeToWait = Math.max( 0, 1100 - (jQuery.now() - me.lastTime[ me.index ]));
+            var timeToWait = Math.max( 0, 1200 - (jQuery.now() - me.lastTime[ me.index ]));
 
             setTimeout(function () {
                 jQuery.when( jQuery.getJSON( obj.url ))
