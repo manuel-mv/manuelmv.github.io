@@ -1,40 +1,43 @@
 (function ($) {
-    var me      = this;
-    var handles = ['adroyl', 'alda', 'Gansito144', 'hopkins', 'kenin_4', 'positr0nix', 'thnkndblv', 'tomystark.0', 'DanielRuiz', '_manu_', 'chava05'];
+    'use strict';
     
-    var requestAnimationFrame = (window.requestAnimationFrame ||
-		window.webkitRequestAnimationFrame ||
-		window.mozRequestAnimationFrame ||
-		window.oRequestAnimationFrame ||
-		window.msRequestAnimationFrame ||
-		(function(callback, element) {
-			window.setTimeout(callback, 10);
-		})).bind(window);
+    var me      = this,
+        handles = ['adroyl', 'alda', 'Gansito144', 'hopkins', 'kenin_4', 'positr0nix', 'thnkndblv', 'tomystark.0', 'DanielRuiz', '_manu_', 'chava05'],
+        requestAnimationFrame = (window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback, element) {
+                window.setTimeout(callback, 10);
+            }).bind(window);
     
-    CodeforcesJsonReqests.userInfo(handles, (function (response) {
-        var users = {};
-        var positions = [];
+    CodeforcesJsonReqests.userInfo(handles, function (response) {
+        var users     = {},
+            positions = [];
         
         $.each(response.result, function (index, item) {
             var handle = item.handle;
             
             positions.push(handle);
             
-            if (!(handle in users)) users[handle] = {};
+            if (!users.hasOwnProperty(handle)) {
+                users[handle] = {};
+            }
             
-            users[handle]['handle']    = item['handle'];
-            users[handle]['rank']      = item['rank']      || 'unrated';
-            users[handle]['maxRank']   = item['maxRank']   || 'unrated';
-            users[handle]['rating']    = item['rating']    || 0;
-            users[handle]['maxRating'] = item['maxRating'] || 0;
+            users[handle].handle    = item.handle;
+            users[handle].rank      = item.rank      || 'unrated';
+            users[handle].maxRank   = item.maxRank   || 'unrated';
+            users[handle].rating    = item.rating    || 0;
+            users[handle].maxRating = item.maxRating || 0;
         });
         
         positions.sort(function (a, b) {
-            if (users[a].rating != users[b].rating) {
+            if (users[a].rating !== users[b].rating) {
                 return (users[a].rating < users[b].rating) ? 1 : -1;
             }
 
-            if (users[a].handle != users[b].handle) {
+            if (users[a].handle !== users[b].handle) {
                 return (users[a].handle.toLowerCase() < users[b].handle.toLowerCase()) ? -1 : 1;
             }
 
@@ -61,64 +64,153 @@
             .addClass('ratingTable')
             .appendTo('#codeforces');
         
-        CodeforcesJsonReqests.userRating(positions, (function () {
+        CodeforcesJsonReqests.userRating(positions, function () {
             $.each(arguments, function (index, item) {
                 var handle           = item.handle,
                     lastRatedContest = null,
                     count            = null;
                 
-                if (!(handle in users)) users[handle] = {};
+                if (!users.hasOwnProperty(handle)) {
+                    users[handle] = {};
+                }
                 
-                users[handle]['ratedContests'] = item.result || [];
-                count = users[handle]['ratedContests'].length;
+                users[handle].ratedContests = item.result || [];
+                count = users[handle].ratedContests.length;
                 if (count > 0) {
-                    lastRatedContest = users[handle]['ratedContests'][count - 1];
+                    lastRatedContest = users[handle].ratedContests[count - 1];
                 }
                 
                 $('<tr></tr>')
-                .append($('<td></td>')
-                    .text(index + 1))
-                .append($('<td></td>')
-                    .addClass(users[handle].rank.split(' ').join('_'))
-                    .append($('<a></a>')
-                        .attr('href', 'http://codeforces.com/profile/' + handle)
-                        .attr('target', '_blank')
-                        .attr('title', users[handle].rank)
-                        .text(handle)))
-                .append($('<td></td>').text(users[handle]['ratedContests'].length))
-                .append($('<td></td>')
-                    .addClass(users[handle].maxRank.split(' ').join('_'))
-                    .text(users[handle].maxRating))
-                .append($('<td></td>')
-                    .addClass('ratingColumn')
-                    .addClass(lastRatedContest === null
-                             ? ''
-                             : lastRatedContest.newRating >= lastRatedContest.oldRating
-                                ? 'incRating'
-                                : 'decRating')
-                    .text(users[handle].rating))
-                .appendTo('#codeforces table tbody');
+                    .append($('<td></td>')
+                        .text(index + 1))
+                    .append($('<td></td>')
+                        .addClass(users[handle].rank.split(' ').join('_'))
+                        .append($('<a></a>')
+                            .attr('href', 'http://codeforces.com/profile/' + handle)
+                            .attr('target', '_blank')
+                            .attr('title', users[handle].rank)
+                            .text(handle)))
+                    .append($('<td></td>').text(users[handle].ratedContests.length))
+                    .append($('<td></td>')
+                        .addClass(users[handle].maxRank.split(' ').join('_'))
+                        .text(users[handle].maxRating))
+                    .append($('<td></td>')
+                        .addClass('ratingColumn')
+                        .addClass(lastRatedContest === null
+                                 ? ''
+                                 : lastRatedContest.newRating >= lastRatedContest.oldRating
+                                    ? 'incRating'
+                                    : 'decRating')
+                        .text(users[handle].rating))
+                    .appendTo('#codeforces table tbody');
             });
             
-            var minUpdtTime = null;
-            var maxUpdtTime = null;
-
-            var minRating = null;
-            var maxRating = null;
+            var minUpdtTime      = null,
+                maxUpdtTime      = null,
+                minRating        = null,
+                maxRating        = null,
+                canvas           = document.getElementById('cfGraph'),
+                canvasW          = canvas.width,
+                canvasH          = canvas.height,
+                ctx              = canvas.getContext('2d'),
+                mouseCoordinates = null,
+                colors           = [
+                    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
+                ],
+                titles           = [{
+                    min: -1000,
+                    max: 1199,
+                    color: 'gray',
+                    alpha: 0.2,
+                    title: 'Newbie'
+                }, {
+                    min: 1200,
+                    max: 1349,
+                    color: '#00ff00',
+                    alpha: 0.1,
+                    title: 'Pupil'
+                }, {
+                    min: 1350,
+                    max: 1499,
+                    color: '#00ff00',
+                    alpha: 0.2,
+                    title: 'Specialist'
+                }, {
+                    min: 1500,
+                    max: 1699,
+                    color: '#0000ff',
+                    alpha: 0.2,
+                    title: 'Expert'
+                }, {
+                    min: 1700,
+                    max: 1899,
+                    color: '#aa00aa',
+                    alpha: 0.2,
+                    title: 'Candidate master'
+                }, {
+                    min: 1900,
+                    max: 2049,
+                    color: '#ff8c00',
+                    alpha: 0.1,
+                    title: 'Master'
+                }, {
+                    min: 2050,
+                    max: 2199,
+                    color: '#ff8c00',
+                    alpha: 0.2,
+                    title: 'International master'
+                }, {
+                    min: 2200,
+                    max: 2599,
+                    color: '#ff0000',
+                    alpha: 0.1,
+                    title: 'Grandmaster'
+                }, {
+                    min: 2600,
+                    max: 1000000000,
+                    color: '#ff0000',
+                    alpha: 0.2,
+                    title: 'International grandmaster'
+                }];
+            
+            $('#cfGraph').mouseleave(function (eObj) {
+                mouseCoordinates = null;
+            });
+            
+            $('#cfGraph').mousemove(function (eObj) {
+                var pos = $(this).offset();
+                mouseCoordinates = {
+                    x: eObj.pageX - pos.left,
+                    y: eObj.pageY - pos.top
+                };
+            });
             
             $.each(users, function (idx, item) {
                 $.each(item.ratedContests, function (idx, rateChange) {
-                    if ( minUpdtTime == null ) minUpdtTime = rateChange.ratingUpdateTimeSeconds;
-                    else minUpdtTime = Math.min(minUpdtTime, rateChange.ratingUpdateTimeSeconds);
+                    if (minUpdtTime === null) {
+                        minUpdtTime = rateChange.ratingUpdateTimeSeconds;
+                    } else {
+                        minUpdtTime = Math.min(minUpdtTime, rateChange.ratingUpdateTimeSeconds);
+                    }
 
-                    if ( maxUpdtTime == null ) maxUpdtTime = rateChange.ratingUpdateTimeSeconds;
-                    else maxUpdtTime = Math.max(maxUpdtTime, rateChange.ratingUpdateTimeSeconds);
+                    if (maxUpdtTime === null) {
+                        maxUpdtTime = rateChange.ratingUpdateTimeSeconds;
+                    } else {
+                        maxUpdtTime = Math.max(maxUpdtTime, rateChange.ratingUpdateTimeSeconds);
+                    }
 
-                    if ( minRating == null ) minRating = rateChange.newRating;
-                    else minRating = Math.min( minRating, rateChange.newRating );
+                    if (minRating === null) {
+                        minRating = rateChange.newRating;
+                    } else {
+                        minRating = Math.min(minRating, rateChange.newRating);
+                    }
 
-                    if ( maxRating == null ) maxRating = rateChange.newRating;
-                    else maxRating = Math.max( maxRating, rateChange.newRating );
+                    if (maxRating === null) {
+                        maxRating = rateChange.newRating;
+                    } else {
+                        maxRating = Math.max(maxRating, rateChange.newRating);
+                    }
                 });
             });
 
@@ -127,20 +219,8 @@
 
             minUpdtTime -= 2592000;
             maxUpdtTime += 2592000;
-            
-            var canvas = document.getElementById('cfGraph');
 
-            var canvasW = canvas.width;
-            var canvasH = canvas.height;
-
-            var ctx = canvas.getContext('2d');
-
-            var colors = [
-                    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-                    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
-                ];
-
-            function DrawPoint(ctx, cpoint, fillColor) {
+            function drawPoint(ctx, cpoint, fillColor) {
                 ctx.globalAlpha = 0.6;
                 ctx.beginPath();
                 ctx.arc(cpoint.x, cpoint.y, 4, 0, 2 * Math.PI, false);
@@ -148,16 +228,17 @@
                 ctx.fill();
             }
             
-            function DrawSpecialPoint(ctx, cpoint, fillColor, handle) {
+            function drawSpecialPoint(ctx, cpoint, fillColor, handle) {
+                ctx.font = "11px Arial";
+                
+                var handleWidth = ctx.measureText(handle).width,
+                    handleX     = Math.min(cpoint.x, canvasW - 10 - handleWidth),
+                    handleY     = cpoint.y - 7;
+                
                 ctx.globalAlpha = 1;
                 ctx.beginPath();
                 
                 ctx.fillStyle = fillColor;
-                
-                ctx.font = "11px Arial";
-                var handleWidth = ctx.measureText(handle).width;
-                var handleX = Math.min(cpoint.x, canvasW - 10 - handleWidth);
-                var handleY = cpoint.y - 7;
                 
                 ctx.arc(cpoint.x, cpoint.y, 5, 0, 2 * Math.PI, false);
                 ctx.arc(cpoint.x, cpoint.y, 2, 0, 2 * Math.PI, false);
@@ -166,7 +247,7 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.fill();
                 
-                ctx.fillRect( handleX - 2, handleY - 10, handleWidth + 4, 12 );
+                ctx.fillRect(handleX - 2, handleY - 10, handleWidth + 4, 12);
                 
                 ctx.strokeStyle = fillColor;
                 ctx.stroke();
@@ -176,13 +257,14 @@
             }
 
             function getCoordinates(x, y) {
-                var cx = x - minUpdtTime;
-                    cx /= maxUpdtTime - minUpdtTime;
-                    cx *= canvasW;
+                var cx = x - minUpdtTime,
+                    cy = y - minRating;
+                
+                cx /= maxUpdtTime - minUpdtTime;
+                cx *= canvasW;
 
-                var cy = y - minRating;
-                    cy /= maxRating - minRating;
-                    cy = (1.0 - cy) * canvasH;
+                cy /= maxRating - minRating;
+                cy = (1.0 - cy) * canvasH;
 
                 return {x: cx, y: cy};
             }
@@ -196,127 +278,60 @@
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
             }
-
-            var titles = [{
-                min: -1000,
-                max: 1199,
-                color: 'gray',
-                alpha: 0.2,
-                title: 'Newbie'
-            }, {
-                min: 1200,
-                max: 1349,
-                color: '#00ff00',
-                alpha: 0.1,
-                title: 'Pupil'
-            }, {
-                min: 1350,
-                max: 1499,
-                color: '#00ff00',
-                alpha: 0.2,
-                title: 'Specialist'
-            }, {
-                min: 1500,
-                max: 1699,
-                color: '#0000ff',
-                alpha: 0.2,
-                title: 'Expert'
-            }, {
-                min: 1700,
-                max: 1899,
-                color: '#aa00aa',
-                alpha: 0.2,
-                title: 'Candidate master'
-            }, {
-                min: 1900,
-                max: 2049,
-                color: '#ff8c00',
-                alpha: 0.1,
-                title: 'Master'
-            }, {
-                min: 2050,
-                max: 2199,
-                color: '#ff8c00',
-                alpha: 0.2,
-                title: 'International master'
-            }, {
-                min: 2200,
-                max: 2599,
-                color: '#ff0000',
-                alpha: 0.1,
-                title: 'Grandmaster'
-            }, {
-                min: 2600,
-                max: 1000000000,
-                color: '#ff0000',
-                alpha: 0.2,
-                title: 'International grandmaster'
-            }];
-            
-            var mouseCoordinates = null;
-            $('#cfGraph').mouseleave(function (eObj) {
-                mouseCoordinates = null;
-            });
-            $('#cfGraph').mousemove(function (eObj) {
-                var pos = $(this).offset();
-                mouseCoordinates = {
-                    x: eObj.pageX - pos.left,
-                    y: eObj.pageY - pos.top
-                };
-            });
             
             requestAnimationFrame(function step() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
                 $.each(titles, function (idx, obj) {
-                    var p = getCoordinates( minUpdtTime, Math.min( maxRating, obj.max ) );
-                    var q = getCoordinates( maxUpdtTime, Math.max( minRating, obj.min ) );
+                    var p = getCoordinates(minUpdtTime, Math.min(maxRating, obj.max)),
+                        q = getCoordinates(maxUpdtTime, Math.max(minRating, obj.min));
 
-                    if ( p.y < q.y ) {
+                    if (p.y < q.y) {
                         ctx.globalAlpha = obj.alpha;
                         ctx.fillStyle = obj.color;
-                        ctx.fillRect( p.x, p.y, q.x - p.x, q.y - p.y );
+                        ctx.fillRect(p.x, p.y, q.x - p.x, q.y - p.y);
 
                         if (obj.min >= 0) {
                             ctx.globalAlpha += 0.5;
                             ctx.font = "bold 12px Arial";
-                            //ctx.fillStyle = 'black';
                             ctx.fillText(obj.min, 5, q.y);
                         }
                     }
                 });
                 
                 if (mouseCoordinates !== null) {
-                    traceLine( ctx, {x: mouseCoordinates.x, y: 0}, {x: mouseCoordinates.x, y: canvasH}, 'black', 0.1 );
+                    traceLine(ctx, {x: mouseCoordinates.x, y: 0}, {x: mouseCoordinates.x, y: canvasH}, 'black', 0.1);
                 }
                 
-                var userCount = 0;
-                var specialPoints = [];
+                var userCount     = 0,
+                    specialPoints = [];
                 $.each(users, function (userIdx, item) {
-                    var q = null;
-                    var userColor = colors[ userCount % colors.length ];
+                    var q               = null,
+                        userColor       = colors[userCount % colors.length],
+                        currentPosition = null,
+                        firstPoint      = null,
+                        lastPoint       = null;
 
-                    if ( item.ratedContests.length > 0 ) {
-                        var currentPosition = null;
-                        var firstPoint = null;
-                        var lastPoint = null;
+                    if (item.ratedContests.length > 0) {
                         $.each(item.ratedContests, function (idx, rateChange) {
-                            var p = getCoordinates( rateChange.ratingUpdateTimeSeconds, rateChange.newRating );
-                            if ( q != null ) {
-                                traceLine( ctx, q, p, userColor );
+                            var p = getCoordinates(rateChange.ratingUpdateTimeSeconds, rateChange.newRating);
+                            if (q !== null) {
+                                traceLine(ctx, q, p, userColor);
                                 if (mouseCoordinates !== null && q.x <= mouseCoordinates.x && mouseCoordinates.x <= p.x) {
                                     currentPosition = {
                                         x: mouseCoordinates.x,
                                         y: q.y + (mouseCoordinates.x - q.x) * (p.y - q.y) / (p.x - q.x)
                                     };
-                                } 
+                                }
                             }
                             q = p;
                             
-                            if ( firstPoint === null ) firstPoint = p;
+                            if (firstPoint === null) {
+                                firstPoint = p;
+                            }
                             lastPoint = p;
 
-                            DrawPoint(ctx, p, userColor);
+                            drawPoint(ctx, p, userColor);
                         });
                         
                         if (mouseCoordinates !== null && currentPosition === null) {
@@ -327,7 +342,7 @@
                             }
                         }
                         
-                        if ( currentPosition !== null ) {
+                        if (currentPosition !== null) {
                             specialPoints.push({
                                 point: currentPosition,
                                 color: userColor,
@@ -336,16 +351,16 @@
                             //DrawSpecialPoint(ctx, currentPosition, userColor, item.handle);
                         }
 
-                        userCount++;
+                        userCount += 1;
                     }
                 });
                 
                 $.each(specialPoints, function (key, value) {
-                    DrawSpecialPoint(ctx, value.point, value.color, value.handle);
+                    drawSpecialPoint(ctx, value.point, value.color, value.handle);
                 });
                 
                 requestAnimationFrame(step);
             });
-        }).bind(me));
-    }).bind(me) );
-})(jQuery);
+        }.bind(me));
+    }.bind(me));
+}(jQuery));
