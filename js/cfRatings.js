@@ -1,6 +1,6 @@
 (function ($) {
     var me      = this;
-    var handles = ['adroyl', 'alda', 'Gansito144', 'hopkins', 'kenin_4', 'positr0nix', 'thnkndblv', 'tomystark.0', 'DanielRuiz', '_manu_'];
+    var handles = ['adroyl', 'alda', 'Gansito144', 'hopkins', 'kenin_4', 'positr0nix', 'thnkndblv', 'tomystark.0', 'DanielRuiz', '_manu_', 'chava05'];
     
     var requestAnimationFrame = (window.requestAnimationFrame ||
 		window.webkitRequestAnimationFrame ||
